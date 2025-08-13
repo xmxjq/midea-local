@@ -14,6 +14,7 @@ from .message import (
     MessagePower,
     MessageQuery,
     MessageStorage,
+    MessageStorageHour,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ class DeviceAttributes(StrEnum):
     dry_status = "dry_status"
     storage = "storage"
     storage_status = "storage_status"
+    storage_set_hour = "storage_set_hour"
     time_remaining = "time_remaining"
     progress = "progress"
     storage_remaining = "storage_remaining"
@@ -90,6 +92,7 @@ class Midea34Device(MideaDevice):
                 DeviceAttributes.child_lock: False,
                 DeviceAttributes.storage: False,
                 DeviceAttributes.storage_status: False,
+                DeviceAttributes.storage_set_hour: 0,
                 DeviceAttributes.time_remaining: None,
                 DeviceAttributes.progress: None,
                 DeviceAttributes.storage_remaining: None,
@@ -163,20 +166,30 @@ class Midea34Device(MideaDevice):
 
     def set_attribute(self, attr: str, value: bool | int | str) -> None:
         """Midea x34 device set attribute."""
-        if not isinstance(value, bool):
-            raise ValueWrongType("[x34] Expected bool")
-        message: MessagePower | MessageLock | MessageStorage | None = None
+        message: MessagePower | MessageLock | MessageStorage | MessageStorageHour | None = None
         if attr == DeviceAttributes.power:
+            if not isinstance(value, bool):
+                raise ValueWrongType("[x34] Expected bool for power")
             message = MessagePower(self._message_protocol_version)
             message.power = value
             self.build_send(message)
         elif attr == DeviceAttributes.child_lock:
+            if not isinstance(value, bool):
+                raise ValueWrongType("[x34] Expected bool for child_lock")
             message = MessageLock(self._message_protocol_version)
             message.lock = value
             self.build_send(message)
         elif attr == DeviceAttributes.storage:
+            if not isinstance(value, bool):
+                raise ValueWrongType("[x34] Expected bool for storage")
             message = MessageStorage(self._message_protocol_version)
             message.storage = value
+            self.build_send(message)
+        elif attr == DeviceAttributes.storage_set_hour:
+            if not isinstance(value, int) or value < 0 or value > 72:
+                raise ValueWrongType("[x34] Expected int between 0 and 72 for storage_set_hour")
+            message = MessageStorageHour(self._message_protocol_version)
+            message.hour = value
             self.build_send(message)
 
 

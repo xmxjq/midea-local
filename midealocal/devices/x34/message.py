@@ -101,12 +101,29 @@ class MessageStorage(Message34Base):
 
     @property
     def _body(self) -> bytearray:
-        storage = 0x01 if self.storage else 0x00
+        storage = 0x02 if self.storage else 0x00
         return (
             bytearray([0x00, 0x00, 0x00, storage])
             + bytearray([0xFF] * 6)
             + bytearray([0x00] * 27)
         )
+
+
+class MessageStorageHour(Message34Base):
+    """X34 message storage hour."""
+
+    def __init__(self, protocol_version: int) -> None:
+        """Initialize X34 message storage hour."""
+        super().__init__(
+            protocol_version=protocol_version,
+            message_type=MessageType.set,
+            body_type=ListTypes.X86,
+        )
+        self.hour = 0
+
+    @property
+    def _body(self) -> bytearray:
+        return bytearray([self.hour]) + bytearray([0x00] * 36)
 
 
 class Message34Body(MessageBody):
