@@ -186,10 +186,11 @@ class Midea34Device(MideaDevice):
             message.storage = value
             self.build_send(message)
         elif attr == DeviceAttributes.storage_set_hour:
-            if not isinstance(value, int) or value < 0 or value > 72:
+            value_int = int(value)
+            if value_int < 0 or value_int > 72:
                 raise ValueWrongType("[x34] Expected int between 0 and 72 for storage_set_hour")
             message = MessageStorageHour(self._message_protocol_version)
-            message.hour = value
+            message.hour = value_int
             self.build_send(message)
 
 
